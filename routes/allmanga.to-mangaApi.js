@@ -174,21 +174,24 @@ router.get('/:mangaId/chapter/:chapterString', async (req, res) => {
     // ========================
     // 🔹 Step 4: Parse and return the response
     // ========================
-    const data = response.data.data;
-
-    // Get the list of pages for the chapter (may differ depending on the API's response shape)
-    const pages = data.chapterPages || data.pages || [];
-
-    // Detect if there may be more pages to load
-    // This is useful for frontend pagination or infinite scroll
-    const hasNext = pages.length === variables.limit;
-
+    //
+    const data = response.data.data.chapterPages.edges;
     // Send the result back as JSON
     return res.json({
-      pages,       // array of image URLs or page data
-      limit: variables.limit,    // how many pages returned
-      offset: variables.offset,  // how many were skipped
-      hasNext      // true if more pages might exist
+    // 1. Creating an 'images' array with processed image data
+      images: data[0].pictureUrls.map(img => ({
+        // For each image in pictureUrls array:
+        url: `${data[0].pictureUrlHead}${img.url}`, // 2. Combine base URL with relative path
+        number: img.num // 3. Include the image number/order
+      })),
+    
+      // 4. Adding chapter metadata in 'chapterInfo' object
+      chapterInfo: {
+        title: data[0].notes, // 5. Chapter title/notes
+        number: data[0].chapterString, // 6. Chapter number as string
+        totalPages: data[0].pictureUrls.length // 7. Total count of images
+      }
+    // 8. Note: Not including limit/offset since API ignores them
     });
 
   } catch (err) {
@@ -203,5 +206,46 @@ router.get('/:mangaId/chapter/:chapterString', async (req, res) => {
   }
 });
 
+
+
+
+
+// // Process both edges to create a fallback system
+// const primarySource = data[0];  // First streamer (e.g., YoutubeAnime)
+// const fallbackSource = data[1]; // Second streamer (e.g., F4S)
+
+// const images = primarySource.pictureUrls.map((img, index) => ({
+//   number: img.num,
+//   // Primary URL
+//   primaryUrl: `${primarySource.pictureUrlHead}${img.url}`,
+//   // Fallback URL (from second source)
+//   fallbackUrl: fallbackSource?.pictureUrls[index] 
+//     ? `${fallbackSource.pictureUrlHead}${fallbackSource.pictureUrls[index].url}`
+//     : null,
+//   // Combined URL - frontend can try primary first, then fallback
+//   url: [
+//     `${primarySource.pictureUrlHead}${img.url}`,
+//     fallbackSource && `${fallbackSource.pictureUrlHead}${fallbackSource.pictureUrls[index]?.url}`
+//   ].filter(Boolean)
+// }));
+
+// return res.json({
+//   images,
+//   chapterInfo: {
+//     title: primarySource.notes || fallbackSource?.notes,
+//     number: primarySource.chapterString,
+//     totalPages: primarySource.pictureUrls.length,
+//     sources: [
+//       {
+//         streamer: primarySource.streamerId,
+//         baseUrl: primarySource.pictureUrlHead
+//       },
+//       {
+//         streamer: fallbackSource?.streamerId,
+//         baseUrl: fallbackSource?.pictureUrlHead
+//       }
+//     ]
+//   }
+// });
 // export file
 module.exports = router;
