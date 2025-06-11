@@ -9,29 +9,47 @@ const router = express.Router();
   // config: {},      Axios configuration
   // request: {}      The underlying HTTP request
   // }
+
+// ========================
+// 🔹 Manga List Endpoint
+// ========================
+// This endpoint fetches a paginated list of manga from the AllAnime API
+// with filtering options for translation type and country of origin
+//
+// Optional Query Parameters (modify the default variables below):
+// ?limit → Number of manga to return per page (default: 30)
+// ?page → Page number to fetch (default: 10)
+// ?translationType → "sub" or "dub" (default: "sub")
+// ?countryOrigin → Country filter (default: "ALL")
 router.get('/', async (req, res) => {
-  // Define the base URL for the API
+  // ========================
+  // 🔹 Step 1: API Request Parameters url & GraphQL Query Configuration
+  // ========================
+  // api url
   const url = 'https://api.allanime.day/api';
-  
+    
   // The variables object contains the parameters for the request
   const variables = {
-      isManga: true,
-      limit: 30,
-      page: 1,
-      translationType: "sub",
-      countryOrigin: "ALL"
+    isManga: true,           // Only fetch manga (not anime)
+    limit: 30,               // Items per page
+    page: 10,                // Page number
+    translationType: "sub",  // Subtitled content only
+    countryOrigin: "ALL"     // No country filter
     };
     
-    // The extensions object contains additional parameters for the request
+  // The extensions object contains additional parameters for the request
   const extensions = {
-      persistedQuery: {
-        version: 1,
-        sha256Hash: "a27e57ef5de5bae714db701fb7b5cf57e13d57938fc6256f7d5c70a975d11f3d"
-      }
-    };
-    
-    // Make a GET request to the API with the constructed URL and parameters
-    // The URL is constructed with query parameters for variables and extensions
+    persistedQuery: {
+      version: 1,
+      sha256Hash: "a27e57ef5de5bae714db701fb7b5cf57e13d57938fc6256f7d5c70a975d11f3d"
+    }
+  };
+
+  // ========================
+  // 🔹 Step 2: Execute API Request
+  // ========================
+  // Make a GET request to the API with the constructed URL and parameters
+  // The URL is constructed with query parameters for variables and extensions
   try {
     const response = await axios.get(url, {
       params: {
@@ -39,14 +57,15 @@ router.get('/', async (req, res) => {
         extensions: JSON.stringify(extensions)
       },
       headers: {
-        "User-Agent": "Mozilla/5.0",
-        "Referer": "https://allmanga.to/"
+        "User-Agent": "Mozilla/5.0",  // Pretend to be a web browser
+        "Referer": "https://allmanga.to/", // Required by API for authentication
+        'Accept': '*/*' // Accept any response format
       }
     });
 
     // get the data from the response object
     // The data is expected to be an array of manga objects
-    const mangaList = response.data;
+    const mangaList = response.data;  // 🔹This is an object containing manga list
 
     // return mangaList from the API response
     // Check if mangaList contains the expected data structure
@@ -55,7 +74,9 @@ router.get('/', async (req, res) => {
       return res.status(404).json({ error: 'No manga found' });
     } else { return res.json(mangaList); }
 
-  // Error Handling:
+  // ========================
+  // 🔹 Step 3: Error Handling:
+  // ========================
   // Catches failures (network issues, invalid responses, etc.)
   // Logs detailed error to your server console
   // Sends user-friendly 500 error with JSON response
@@ -250,65 +271,5 @@ router.get('/:mangaId/chapter/:chapterString', async (req, res) => {
 
 
 
-
-
-
-    // Send the result back as JSON
-    // return res.json({
-    // // 1. Creating an 'images' array with processed image data
-    //   images: data[0].pictureUrls.map(img => ({
-    //     // For each image in pictureUrls array:
-    //     url: `${data[0].pictureUrlHead}${img.url}`, // 2. Combine base URL with relative path
-    //     number: img.num // 3. Include the image number/order
-    //   })),
-    
-    //   // 4. Adding chapter metadata in 'chapterInfo' object
-    //   chapterInfo: {
-    //     title: data[0].notes, // 5. Chapter title/notes
-    //     number: data[0].chapterString, // 6. Chapter number as string
-    //     totalPages: data[0].pictureUrls.length // 7. Total count of images
-    //   }
-    // // 8. Note: Not including limit/offset since API ignores them
-    // });
-
-
-
-// // Process both edges to create a fallback system
-// const primarySource = data[0];  // First streamer (e.g., YoutubeAnime)
-// const fallbackSource = data[1]; // Second streamer (e.g., F4S)
-
-// const images = primarySource.pictureUrls.map((img, index) => ({
-//   number: img.num,
-//   // Primary URL
-//   primaryUrl: `${primarySource.pictureUrlHead}${img.url}`,
-//   // Fallback URL (from second source)
-//   fallbackUrl: fallbackSource?.pictureUrls[index] 
-//     ? `${fallbackSource.pictureUrlHead}${fallbackSource.pictureUrls[index].url}`
-//     : null,
-//   // Combined URL - frontend can try primary first, then fallback
-//   url: [
-//     `${primarySource.pictureUrlHead}${img.url}`,
-//     fallbackSource && `${fallbackSource.pictureUrlHead}${fallbackSource.pictureUrls[index]?.url}`
-//   ].filter(Boolean)
-// }));
-
-// return res.json({
-//   images,
-//   chapterInfo: {
-//     title: primarySource.notes || fallbackSource?.notes,
-//     number: primarySource.chapterString,
-//     totalPages: primarySource.pictureUrls.length,
-//     sources: [
-//       {
-//         streamer: primarySource.streamerId,
-//         baseUrl: primarySource.pictureUrlHead
-//       },
-//       {
-//         streamer: fallbackSource?.streamerId,
-//         baseUrl: fallbackSource?.pictureUrlHead
-//       }
-//     ]
-//   }
-// });
 // export file
 module.exports = router;
