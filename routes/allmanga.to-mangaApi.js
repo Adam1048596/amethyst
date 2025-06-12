@@ -70,7 +70,7 @@ router.get('/', async (req, res) => {
 
     // get the data from the response object
     // The data is expected to be an array of manga objects
-    const mangaList = response.data;  // 🔹This is an object containing manga list
+    const mangaList = response.data.data.mangas.edges;  // 🔹This is an object containing manga list
 
     // return mangaList from the API response
     // Check if mangaList contains the expected data structure
@@ -78,6 +78,7 @@ router.get('/', async (req, res) => {
     if (!mangaList) {
       return res.status(404).json({ error: 'No manga found' });
     } else { return res.json({
+      success: true,
       data: mangaList,
       nextPage: page + 1, // Tell frontend what page to request next
     
