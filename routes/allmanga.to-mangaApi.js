@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
   const variables = {
     isManga: true,           // Only fetch manga (not anime)
     limit: 30,               // Items per page
-    page: 10,                // Page number
+    page: 1,                // Page number
     translationType: "sub",  // Subtitled content only
     countryOrigin: "ALL"     // No country filter
     };

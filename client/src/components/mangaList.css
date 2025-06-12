@@ -1,0 +1,29 @@
+.manga-list {
+  padding: 20px;
+  font-family: sans-serif;
+  background-color: #f2f2f2;
+}
+
+.manga-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.manga-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 10px;
+  text-align: center;
+}
+
+.manga-card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.manga-card h3 {
+  margin-top: 10px;
+  font-size: 1rem;
+}
