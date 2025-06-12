@@ -27,12 +27,17 @@ router.get('/', async (req, res) => {
   // ========================
   // api url
   const url = 'https://api.allanime.day/api';
-    
+
+  // // Page number
+  const DEFAULT_PAGE = 1;
+  const DEFAULT_LIMIT = 30; // This will be our fixed size for each page load
+  const page = parseInt(req.query.page) || DEFAULT_PAGE;
+
   // The variables object contains the parameters for the request
   const variables = {
     isManga: true,           // Only fetch manga (not anime)
-    limit: 30,               // Items per page
-    page: 1,                // Page number
+    limit: DEFAULT_LIMIT,    // Items per page
+    page: page,              // Page number
     translationType: "sub",  // Subtitled content only
     countryOrigin: "ALL"     // No country filter
     };
@@ -53,13 +58,13 @@ router.get('/', async (req, res) => {
   try {
     const response = await axios.get(url, {
       params: {
-        variables: JSON.stringify(variables),
+        variables: JSON.stringify(variables), 
         extensions: JSON.stringify(extensions)
       },
       headers: {
-        "User-Agent": "Mozilla/5.0",  // Pretend to be a web browser
-        "Referer": "https://allmanga.to/", // Required by API for authentication
-        'Accept': '*/*' // Accept any response format
+        "User-Agent": "Mozilla/5.0",        // Pretend to be a web browser
+        "Referer": "https://allmanga.to/",  // Required by API for authentication
+        'Accept': '*/*'                     // Accept any response format
       }
     });
 
@@ -72,7 +77,11 @@ router.get('/', async (req, res) => {
     // If mangaList is empty or does not contain the expected data, return a 404 error
     if (!mangaList) {
       return res.status(404).json({ error: 'No manga found' });
-    } else { return res.json(mangaList); }
+    } else { return res.json({
+      data: mangaList,
+      nextPage: page + 1, // Tell frontend what page to request next
+    
+    });}
 
   // ========================
   // 🔹 Step 3: Error Handling:
